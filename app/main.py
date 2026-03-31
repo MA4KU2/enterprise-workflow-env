@@ -1,69 +1,51 @@
 from fastapi import FastAPI, Body
 from app.models import WorkflowAction, ResetRequest, TaskID
 from app.environment import WorkflowEnvironment
+from app.grader import run_all_graders, safe_score
 from functools import lru_cache
 
 app = FastAPI(title="Enterprise Workflow OpenEnv")
 
 
-# --- ENVIRONMENT CACHE ---
 @lru_cache(maxsize=1)
 def get_env():
     return WorkflowEnvironment()
 
 
-# --- HEALTH CHECK ---
+# --- HEALTH ---
 @app.get("/")
 def root():
     return {"status": "ok", "env": "enterprise-workflow-env"}
 
 
-# --- RESET ENDPOINT (STRICT FORMAT) ---
+# --- RESET ---
 @app.post("/reset")
 def reset(req: ResetRequest = Body(default=ResetRequest())):
-    task_id = req.task_id if req.task_id is not None else TaskID.easy
+    task_id = req.task_id if req.task_id else TaskID.easy
     get_env().reset(task_id)
-
-    # Minimal response (important for evaluator)
     return {"status": "reset"}
 
 
-# --- STEP ENDPOINT (CRITICAL FIX) ---
+# --- STEP (STRICT FORMAT) ---
 @app.post("/step")
 def step(action: WorkflowAction):
     obs = get_env().step(action)
 
-    # STRICT schema → evaluator safe
     return {
         "reward": float(obs.reward),
         "done": bool(obs.done)
     }
 
 
-# --- OPTIONAL (SAFE TO KEEP, NOT USED BY EVALUATOR) ---
-@app.get("/state/{task_id}")
-def state(task_id: TaskID):
-    return get_env().state(task_id)
+# --- GRADER (CRITICAL FOR EVALUATOR) ---
+@app.get("/grader")
+def grader():
+    scores = run_all_graders()
 
-
-@app.get("/tasks")
-def tasks():
     return {
-        "tasks": [
-            {
-                "id": "easy",
-                "description": "Parse purchase requisition and match correct inventory item",
-                "difficulty": "easy"
-            },
-            {
-                "id": "medium",
-                "description": "3-step workflow: parse requisition, check inventory, draft purchase order",
-                "difficulty": "medium"
-            },
-            {
-                "id": "hard",
-                "description": "Full 5-step enterprise pipeline",
-                "difficulty": "hard"
-            }
-        ]
+        "scores": {
+            "easy": safe_score(scores.get("easy", 0)),
+            "medium": safe_score(scores.get("medium", 0)),
+            "hard": safe_score(scores.get("hard", 0)),
+        }
     }

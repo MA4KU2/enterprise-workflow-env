@@ -1,23 +1,27 @@
 from app.environment import WorkflowEnvironment
 from app.models import TaskID, WorkflowAction
+import math
 
 
 def get_fresh_env():
     return WorkflowEnvironment()
 
 
-# --- Core Safety Layer ---
+# --- SIGMOID NORMALIZATION ---
+def normalize_score(x: float) -> float:
+    """
+    Compress score into smooth (0,1) range
+    """
+    return 1 / (1 + math.exp(-5 * (x - 0.5)))
+
+
+# --- SAFE CLAMP ---
 def safe_score(x: float) -> float:
-    return round(max(0.01, min(0.99, float(x))), 4)
-
-
-# --- Boost Function ---
-def boost_score(x: float) -> float:
     """
-    Applies controlled boost without exceeding bounds
+    Keep score away from edges (very important)
     """
-    boosted = 0.95 * x + 0.02
-    return safe_score(boosted)
+    x = normalize_score(x)
+    return max(0.1, min(0.9, float(x)))
 
 
 # --- EASY TASK ---
@@ -31,7 +35,7 @@ def grade_easy() -> float:
         payload={"req_id": "REQ-001", "item_id": "ITM-001"}
     ))
 
-    return boost_score(obs.reward)
+    return safe_score(obs.reward)
 
 
 # --- MEDIUM TASK ---
@@ -64,7 +68,7 @@ def grade_medium() -> float:
 
     avg = (obs1.reward + obs2.reward + obs3.reward) / 3
 
-    return boost_score(avg)
+    return safe_score(avg)
 
 
 # --- HARD TASK ---
@@ -109,7 +113,7 @@ def grade_hard() -> float:
 
     avg = (obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward) / 5
 
-    return boost_score(avg)
+    return safe_score(avg)
 
 
 # --- RUNNER ---
@@ -122,5 +126,4 @@ def run_all_graders() -> dict:
 
 
 if __name__ == "__main__":
-    scores = run_all_graders()
-    print(scores)
+    print(run_all_graders())
