@@ -10,12 +10,9 @@ def get_fresh_env():
 def safe_score(x: float) -> float:
     """
     Ensures score is strictly within (0, 1)
+    No rounding → avoids precision hitting 1.0
     """
-    if x <= 0:
-        return 0.01
-    elif x >= 1:
-        return 0.99
-    return round(x, 4)
+    return max(0.01, min(0.99, float(x)))
 
 
 # --- EASY TASK ---
@@ -60,13 +57,10 @@ def grade_medium() -> float:
         }
     ))
 
-    total = obs1.reward + obs2.reward + obs3.reward
+    # NORMALIZED AVERAGE (prevents hitting 1.0)
+    total = (obs1.reward + obs2.reward + obs3.reward) / 3
 
-    # Option 1: Safe sum (keeps your logic)
     return safe_score(total)
-
-    # Option 2 (recommended for stability):
-    # return safe_score(total / 3)
 
 
 # --- HARD TASK ---
@@ -109,13 +103,10 @@ def grade_hard() -> float:
         payload={"approver": "cfo@company.com"}
     ))
 
-    total = obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward
+    # NORMALIZED AVERAGE (prevents hitting 1.0)
+    total = (obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward) / 5
 
-    # Option 1: Safe sum
     return safe_score(total)
-
-    # Option 2 (recommended for stability):
-    # return safe_score(total / 5)
 
 
 # --- RUNNER ---
