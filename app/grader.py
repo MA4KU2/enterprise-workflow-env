@@ -8,11 +8,16 @@ def get_fresh_env():
 
 # --- Core Safety Layer ---
 def safe_score(x: float) -> float:
+    return round(max(0.01, min(0.99, float(x))), 4)
+
+
+# --- Boost Function ---
+def boost_score(x: float) -> float:
     """
-    Ensures score is strictly within (0, 1)
-    No rounding → avoids precision hitting 1.0
+    Applies controlled boost without exceeding bounds
     """
-    return max(0.01, min(0.99, float(x)))
+    boosted = 0.95 * x + 0.02
+    return safe_score(boosted)
 
 
 # --- EASY TASK ---
@@ -26,7 +31,7 @@ def grade_easy() -> float:
         payload={"req_id": "REQ-001", "item_id": "ITM-001"}
     ))
 
-    return safe_score(obs.reward)
+    return boost_score(obs.reward)
 
 
 # --- MEDIUM TASK ---
@@ -57,10 +62,9 @@ def grade_medium() -> float:
         }
     ))
 
-    # NORMALIZED AVERAGE (prevents hitting 1.0)
-    total = (obs1.reward + obs2.reward + obs3.reward) / 3
+    avg = (obs1.reward + obs2.reward + obs3.reward) / 3
 
-    return safe_score(total)
+    return boost_score(avg)
 
 
 # --- HARD TASK ---
@@ -103,10 +107,9 @@ def grade_hard() -> float:
         payload={"approver": "cfo@company.com"}
     ))
 
-    # NORMALIZED AVERAGE (prevents hitting 1.0)
-    total = (obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward) / 5
+    avg = (obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward) / 5
 
-    return safe_score(total)
+    return boost_score(avg)
 
 
 # --- RUNNER ---
