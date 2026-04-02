@@ -28,7 +28,7 @@ class WorkflowState(BaseModel):
     total_reward: float = 0.0
 
 class ResetRequest(BaseModel):
-    task_id: TaskID
+    task_id: Optional[TaskID] = TaskID.easy
 
 class ResetResponse(BaseModel):
     task_id: TaskID
