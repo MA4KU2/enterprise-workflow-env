@@ -1,5 +1,3 @@
-# enterprise-workflow-env
-
 ---
 title: Enterprise Workflow OpenEnv
 emoji: 🏢
