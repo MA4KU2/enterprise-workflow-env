@@ -39,3 +39,4 @@ endpoints:
 server:
   port: 7860
   host: "0.0.0.0"
+  entry_point: "server.app:main"
