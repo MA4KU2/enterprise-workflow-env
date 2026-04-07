@@ -1,9 +1,11 @@
 from app.environment import WorkflowEnvironment
 from app.models import TaskID, WorkflowAction
 
-env = WorkflowEnvironment()
+def get_fresh_env():
+    return WorkflowEnvironment()
 
 def grade_easy() -> float:
+    env = get_fresh_env()
     env.reset(TaskID.easy)
     obs = env.step(WorkflowAction(
         task_id=TaskID.easy,
@@ -13,6 +15,7 @@ def grade_easy() -> float:
     return round(obs.reward, 4)
 
 def grade_medium() -> float:
+    env = get_fresh_env()
     env.reset(TaskID.medium)
     obs1 = env.step(WorkflowAction(
         task_id=TaskID.medium,
@@ -32,6 +35,7 @@ def grade_medium() -> float:
     return round(obs1.reward + obs2.reward + obs3.reward, 4)
 
 def grade_hard() -> float:
+    env = get_fresh_env()
     env.reset(TaskID.hard)
     obs1 = env.step(WorkflowAction(
         task_id=TaskID.hard,
