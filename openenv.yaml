@@ -1,0 +1,42 @@
+name: enterprise-workflow-env
+version: "1.0.0"
+description: "Enterprise Workflow Orchestration environment for AI agent training"
+author: "Markus"
+license: MIT
+
+environment:
+  type: workflow
+  domain: enterprise
+  real_world: true
+
+tasks:
+  - id: easy
+    description: "Parse purchase requisition and match correct inventory item"
+    difficulty: easy
+    max_steps: 1
+    reward_range: [0.0, 1.0]
+
+  - id: medium
+    description: "3-step workflow: parse requisition, check inventory, draft purchase order"
+    difficulty: medium
+    max_steps: 3
+    reward_range: [0.0, 1.0]
+
+  - id: hard
+    description: "Full 5-step enterprise pipeline: parse, inventory, supplier, PO, approval"
+    difficulty: hard
+    max_steps: 5
+    reward_range: [0.0, 1.0]
+
+endpoints:
+  reset: /reset
+  step: /step
+  state: /state/{task_id}
+  tasks: /tasks
+  grader: /grader
+  baseline: /baseline
+
+server:
+  port: 7860
+  host: "0.0.0.0"
+  entry_point: "server.app:main"

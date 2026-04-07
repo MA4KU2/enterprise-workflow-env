@@ -1,0 +1,9 @@
+openenv-core
+fastapi
+uvicorn
+pydantic>=2.0
+openai>=2.21.0
+python-dotenv
+httpx
+pyyaml
+requests
