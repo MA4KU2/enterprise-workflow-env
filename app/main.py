@@ -1,28 +1,33 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from app.models import WorkflowAction, ResetRequest, TaskID
 from app.environment import WorkflowEnvironment
 from app.grader import run_all_graders
+from functools import lru_cache
 
 app = FastAPI(title="Enterprise Workflow OpenEnv")
-env = WorkflowEnvironment()
+
+@lru_cache(maxsize=1)
+def get_env():
+    return WorkflowEnvironment()
 
 @app.get("/")
 def root():
     return {"status": "ok", "env": "enterprise-workflow-env"}
 
 @app.post("/reset")
-def reset(req: ResetRequest):
-    state = env.reset(req.task_id)
+def reset(req: ResetRequest = Body(default=ResetRequest())):
+    task_id = req.task_id if req.task_id is not None else TaskID.easy
+    state = get_env().reset(task_id)
     return state
 
 @app.post("/step")
 def step(action: WorkflowAction):
-    obs = env.step(action)
+    obs = get_env().step(action)
     return obs
 
 @app.get("/state/{task_id}")
 def state(task_id: TaskID):
-    return env.state(task_id)
+    return get_env().state(task_id)
 
 @app.get("/tasks")
 def tasks():
