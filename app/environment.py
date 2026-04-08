@@ -148,6 +148,6 @@ class WorkflowEnvironment:
                 return 0.0, True, {}, "Expected flag_approval"
             approver = action.payload.get("approver", "")
             if approver:
-                return 0.2, True, {"flagged_to": approver}, "Full pipeline complete"
+                return 0.19, True, {"flagged_to": approver}, "Full pipeline complete"
             return 0.1, True, {}, "Missing approver"
         return 0.0, True, {}, "Unexpected step"
