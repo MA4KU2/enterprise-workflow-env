@@ -15,7 +15,7 @@ def normalize_score(x: float, steps: int) -> float:
     """
     ratio = x / 1.0  # total expected reward is always 1.0
     sigmoid = 1 / (1 + math.exp(-5 * (ratio - 0.5)))
-    return max(0.1, min(0.9, float(sigmoid)))
+    return max(0.15, min(0.85, float(sigmoid)))
 
 
 # --- EASY TASK ---
