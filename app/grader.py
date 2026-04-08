@@ -18,10 +18,10 @@ def normalize_score(x: float) -> float:
 # --- SAFE CLAMP ---
 def safe_score(x: float) -> float:
     """
-    Keep score away from edges (very important)
+    Sigmoid threshold: >0.5 = 1, <=0.5 = 0
     """
-    x = normalize_score(x)
-    return max(0.1, min(0.9, float(x)))
+    sigmoid = 1 / (1 + math.exp(-5 * (x - 0.5)))
+    return 1.0 if sigmoid > 0.5 else 0.0
 
 
 # --- EASY TASK ---
@@ -29,11 +29,13 @@ def grade_easy() -> float:
     env = get_fresh_env()
     env.reset(TaskID.easy)
 
-    obs = env.step(WorkflowAction(
-        task_id=TaskID.easy,
-        action_type="parse_requisition",
-        payload={"req_id": "REQ-001", "item_id": "ITM-001"}
-    ))
+    obs = env.step(
+        WorkflowAction(
+            task_id=TaskID.easy,
+            action_type="parse_requisition",
+            payload={"req_id": "REQ-001", "item_id": "ITM-001"},
+        )
+    )
 
     return safe_score(obs.reward)
 
@@ -43,28 +45,34 @@ def grade_medium() -> float:
     env = get_fresh_env()
     env.reset(TaskID.medium)
 
-    obs1 = env.step(WorkflowAction(
-        task_id=TaskID.medium,
-        action_type="parse_requisition",
-        payload={"req_id": "REQ-002"}
-    ))
+    obs1 = env.step(
+        WorkflowAction(
+            task_id=TaskID.medium,
+            action_type="parse_requisition",
+            payload={"req_id": "REQ-002"},
+        )
+    )
 
-    obs2 = env.step(WorkflowAction(
-        task_id=TaskID.medium,
-        action_type="check_inventory",
-        payload={"item_id": "ITM-002"}
-    ))
+    obs2 = env.step(
+        WorkflowAction(
+            task_id=TaskID.medium,
+            action_type="check_inventory",
+            payload={"item_id": "ITM-002"},
+        )
+    )
 
-    obs3 = env.step(WorkflowAction(
-        task_id=TaskID.medium,
-        action_type="draft_po",
-        payload={
-            "item_id": "ITM-002",
-            "quantity": 10,
-            "total_cost": 350.0,
-            "department": "Operations"
-        }
-    ))
+    obs3 = env.step(
+        WorkflowAction(
+            task_id=TaskID.medium,
+            action_type="draft_po",
+            payload={
+                "item_id": "ITM-002",
+                "quantity": 10,
+                "total_cost": 350.0,
+                "department": "Operations",
+            },
+        )
+    )
 
     avg = (obs1.reward + obs2.reward + obs3.reward) / 3
 
@@ -76,40 +84,50 @@ def grade_hard() -> float:
     env = get_fresh_env()
     env.reset(TaskID.hard)
 
-    obs1 = env.step(WorkflowAction(
-        task_id=TaskID.hard,
-        action_type="parse_requisition",
-        payload={"req_id": "REQ-003"}
-    ))
+    obs1 = env.step(
+        WorkflowAction(
+            task_id=TaskID.hard,
+            action_type="parse_requisition",
+            payload={"req_id": "REQ-003"},
+        )
+    )
 
-    obs2 = env.step(WorkflowAction(
-        task_id=TaskID.hard,
-        action_type="check_inventory",
-        payload={"item_id": "ITM-003"}
-    ))
+    obs2 = env.step(
+        WorkflowAction(
+            task_id=TaskID.hard,
+            action_type="check_inventory",
+            payload={"item_id": "ITM-003"},
+        )
+    )
 
-    obs3 = env.step(WorkflowAction(
-        task_id=TaskID.hard,
-        action_type="message_supplier",
-        payload={"item_id": "ITM-003"}
-    ))
+    obs3 = env.step(
+        WorkflowAction(
+            task_id=TaskID.hard,
+            action_type="message_supplier",
+            payload={"item_id": "ITM-003"},
+        )
+    )
 
-    obs4 = env.step(WorkflowAction(
-        task_id=TaskID.hard,
-        action_type="draft_po",
-        payload={
-            "item_id": "ITM-003",
-            "quantity": 2,
-            "total_cost": 900.0,
-            "department": "HR"
-        }
-    ))
+    obs4 = env.step(
+        WorkflowAction(
+            task_id=TaskID.hard,
+            action_type="draft_po",
+            payload={
+                "item_id": "ITM-003",
+                "quantity": 2,
+                "total_cost": 900.0,
+                "department": "HR",
+            },
+        )
+    )
 
-    obs5 = env.step(WorkflowAction(
-        task_id=TaskID.hard,
-        action_type="flag_approval",
-        payload={"approver": "cfo@company.com"}
-    ))
+    obs5 = env.step(
+        WorkflowAction(
+            task_id=TaskID.hard,
+            action_type="flag_approval",
+            payload={"approver": "cfo@company.com"},
+        )
+    )
 
     avg = (obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward) / 5
 
@@ -118,11 +136,7 @@ def grade_hard() -> float:
 
 # --- RUNNER ---
 def run_all_graders() -> dict:
-    return {
-        "easy": grade_easy(),
-        "medium": grade_medium(),
-        "hard": grade_hard()
-    }
+    return {"easy": grade_easy(), "medium": grade_medium(), "hard": grade_hard()}
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Body
 from app.models import WorkflowAction, ResetRequest, TaskID
 from app.environment import WorkflowEnvironment
-from app.grader import run_all_graders, safe_score
+from app.grader import run_all_graders
 from functools import lru_cache
 
 app = FastAPI(title="Enterprise Workflow OpenEnv")
@@ -31,21 +31,11 @@ def reset(req: ResetRequest = Body(default=ResetRequest())):
 def step(action: WorkflowAction):
     obs = get_env().step(action)
 
-    return {
-        "reward": float(obs.reward),
-        "done": bool(obs.done)
-    }
+    return {"reward": float(obs.reward), "done": bool(obs.done)}
 
 
 # --- GRADER (CRITICAL FOR EVALUATOR) ---
 @app.get("/grader")
 def grader():
     scores = run_all_graders()
-
-    return {
-        "scores": {
-            "easy": safe_score(scores.get("easy", 0)),
-            "medium": safe_score(scores.get("medium", 0)),
-            "hard": safe_score(scores.get("hard", 0)),
-        }
-    }
+    return {"scores": scores}
