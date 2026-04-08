@@ -7,21 +7,15 @@ def get_fresh_env():
     return WorkflowEnvironment()
 
 
-# --- SIGMOID NORMALIZATION ---
-def normalize_score(x: float) -> float:
+# --- NORMALIZE AND CLAMP ---
+def normalize_score(x: float, steps: int) -> float:
     """
-    Compress score into smooth (0,1) range
+    Normalize by expected total reward (always 1.0)
+    then apply sigmoid
     """
-    return 1 / (1 + math.exp(-5 * (x - 0.5)))
-
-
-# --- SAFE CLAMP ---
-def safe_score(x: float) -> float:
-    """
-    Sigmoid threshold: >0.5 = 1, <=0.5 = 0
-    """
-    sigmoid = 1 / (1 + math.exp(-5 * (x - 0.5)))
-    return 1.0 if sigmoid > 0.5 else 0.0
+    ratio = x / 1.0  # total expected reward is always 1.0
+    sigmoid = 1 / (1 + math.exp(-5 * (ratio - 0.5)))
+    return max(0.1, min(0.9, float(sigmoid)))
 
 
 # --- EASY TASK ---
@@ -37,7 +31,7 @@ def grade_easy() -> float:
         )
     )
 
-    return safe_score(obs.reward)
+    return normalize_score(obs.reward, 1)
 
 
 # --- MEDIUM TASK ---
@@ -74,9 +68,8 @@ def grade_medium() -> float:
         )
     )
 
-    avg = (obs1.reward + obs2.reward + obs3.reward) / 3
-
-    return safe_score(avg)
+    total = obs1.reward + obs2.reward + obs3.reward
+    return normalize_score(total, 3)
 
 
 # --- HARD TASK ---
@@ -129,9 +122,8 @@ def grade_hard() -> float:
         )
     )
 
-    avg = (obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward) / 5
-
-    return safe_score(avg)
+    total = obs1.reward + obs2.reward + obs3.reward + obs4.reward + obs5.reward
+    return normalize_score(total, 5)
 
 
 # --- RUNNER ---
