@@ -10,12 +10,9 @@ def get_fresh_env():
 # --- NORMALIZE AND CLAMP ---
 def normalize_score(x: float, steps: int) -> float:
     """
-    Normalize by expected total reward (always 1.0)
-    then apply sigmoid
+    Pure sigmoid — naturally strictly between 0 and 1, no clamping needed
     """
-    ratio = x / 1.0  # total expected reward is always 1.0
-    sigmoid = 1 / (1 + math.exp(-5 * (ratio - 0.5)))
-    return max(0.15, min(0.85, float(sigmoid)))
+    return 1 / (1 + math.exp(-5 * (x - 0.5)))
 
 
 # --- EASY TASK ---
