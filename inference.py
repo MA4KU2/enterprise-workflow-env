@@ -1,6 +1,8 @@
 import os
 import json
 import requests
+import time
+from agent.retry_utils import jittered_backoff
 from typing import List, Dict, Any
 from openai import OpenAI
 
@@ -164,20 +166,28 @@ def log_end(success, steps, score, rewards):
     )
 
 
-def llm_decide(system_prompt, user_prompt):
-    try:
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=100,
-            temperature=0.0,
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"error: {e}"
+def llm_decide(system_prompt, user_prompt, max_retries=3):
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                max_tokens=100,
+                temperature=0.0,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            if attempt == max_retries:
+                return f"error: {e}"
+            delay = jittered_backoff(attempt, base_delay=2.0, max_delay=30.0)
+            print(
+                f"[WARN] LLM call failed (attempt {attempt}), retrying in {delay:.1f}s: {e}",
+                flush=True,
+            )
+            time.sleep(delay)
 
 
 def run_task(task_id, steps):
