@@ -6,7 +6,7 @@ sdk: docker
 pinned: false
 ---
 
-# ☠️ Enterprise Workflow OpenEnv
+# 🏢 Enterprise Workflow OpenEnv
 
 > A real-world **OpenEnv-compatible** environment for training AI agents on enterprise procurement workflows — built for the **Meta × PyTorch × Hugging Face OpenEnv Hackathon** hosted by Scaler School of Technology (SST).
 
@@ -42,6 +42,7 @@ This environment is designed to benchmark and train agents on **structured decis
 ---
 
 ## 📋 Inference Output
+```
 [START] task=easy env=enterprise-workflow-env model=openai/gpt-oss-20b:free
 [STEP] step=1 action=parse_requisition reward=0.99 done=true error=null
 [END] success=true steps=1 score=0.99 rewards=0.99
@@ -57,6 +58,7 @@ This environment is designed to benchmark and train agents on **structured decis
 [STEP] step=4 action=draft_po reward=0.20 done=false error=null
 [STEP] step=5 action=flag_approval reward=0.19 done=true error=null
 [END] success=true steps=5 score=0.99 rewards=0.20,0.20,0.20,0.20,0.19
+```
 
 ---
 
