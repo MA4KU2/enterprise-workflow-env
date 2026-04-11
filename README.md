@@ -47,7 +47,11 @@ Instead of paid OpenAI API credits, this project uses **OpenRouter** as the API 
 The inference script is fully compatible with any OpenAI-compatible endpoint via environment variables:
 - `API_BASE_URL` — swap to any provider
 - `MODEL_NAME` — swap to any model
+<<<<<<< HEAD
 - `HF_TOKEN` && `OPENAI_API_KEY`  — your API key
+=======
+- `HF_THJLKLOKEN` && `OPENAI_API_KEY`  — your API key
+>>>>>>> 8e7e41a (fix: graceful unknown action handling)
 
 ---
 

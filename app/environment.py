@@ -164,7 +164,7 @@ class WorkflowEnvironment:
                         )
             return 0.33, True, {"po_draft": action.payload}, "PO drafted successfully"
         else:
-            return 0.0, True, {}, "Unexpected step"
+            return 0.0, False, {}, "Unexpected action type"
 
     def _run_hard(self, action, state):
         # Check if parse_requisition has been completed
@@ -252,4 +252,4 @@ class WorkflowEnvironment:
                 "Requisition parsed",
             )
 
-        return 0.0, True, {}, "Unexpected step"
+        return 0.0, False, {}, "Unexpected action type"

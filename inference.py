@@ -11,7 +11,9 @@ ENV_URL = os.getenv("ENV_URL", "https://ma4ku2-enterprise-workflow-env.hf.space"
 BASE_URL = ENV_URL
 API_BASE_URL = os.getenv("API_BASE_URL", "https://openrouter.ai/api/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "openai/gpt-oss-20b:free")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "")
+API_KEY = (
+    os.getenv("OPENAI_API_KEY") or os.getenv("HF_TOKEN") or os.getenv("API_KEY", "")
+)
 
 from agent.skills import get_task_skills, remember, validate_payload
 
