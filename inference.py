@@ -5,7 +5,6 @@ import time
 from agent.retry_utils import jittered_backoff
 from typing import List, Dict, Any
 from openai import OpenAI
-from agent.trajectory import maybe_compress
 
 # --- CONFIGURATION (SCALER REQUIREMENTS) ---
 ENV_URL = os.getenv("ENV_URL", "https://ma4ku2-enterprise-workflow-env.hf.space")
@@ -222,12 +221,6 @@ def run_task(task_id, steps):
         done = r.get("done", False)
         error = r.get("info") if reward == 0.0 else None
         rewards.append(reward)
-
-        # Compress history if getting too long
-        history_snapshot = [
-            {"action": a, "reward": r} for a, r in zip(steps[:i], rewards)
-        ]
-        history_snapshot, _ = maybe_compress(history_snapshot)
 
         # Store in memory
         remember(task_id, skill_name, action["payload"], reward)
