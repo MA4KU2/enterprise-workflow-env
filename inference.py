@@ -8,11 +8,12 @@ from openai import OpenAI
 
 # --- CONFIGURATION (SCALER REQUIREMENTS) ---
 ENV_URL = os.getenv("ENV_URL", "https://ma4ku2-enterprise-workflow-env.hf.space")
+BASE_URL = ENV_URL
 API_BASE_URL = os.getenv("API_BASE_URL", "https://openrouter.ai/api/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "openai/gpt-oss-20b:free")
 API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "")
 
-from agent.skills import get_task_skills, remember, recall_best, validate_payload
+from agent.skills import get_task_skills, remember, validate_payload
 
 client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
@@ -193,17 +194,10 @@ def llm_decide(system_prompt, user_prompt, max_retries=3):
 def run_task(task_id, steps):
     rewards = []
     log_start(task_id, "enterprise-workflow-env", MODEL_NAME)
-    requests.post(f"{ENV_URL}/reset", json={"task_id": task_id})
-
-    skills = get_task_skills(task_id)
+    requests.post(f"{BASE_URL}/reset", json={"task_id": task_id})
 
     for i, action in enumerate(steps, 1):
         skill_name = action["action_type"]
-
-        # Check memory for best past payload
-        best = recall_best(task_id, skill_name)
-        if best:
-            action["payload"] = best["payload"]
 
         # Validate payload
         missing = validate_payload(skill_name, action["payload"])
@@ -216,7 +210,7 @@ def run_task(task_id, steps):
             user_prompt=f"Task: {task_id}, Step {i}, Skill: {skill_name}, Payload: {action['payload']}",
         )
 
-        r = requests.post(f"{ENV_URL}/step", json=action).json()
+        r = requests.post(f"{BASE_URL}/step", json=action).json()
         reward = r.get("reward", 0.0)
         done = r.get("done", False)
         error = r.get("info") if reward == 0.0 else None
@@ -230,7 +224,7 @@ def run_task(task_id, steps):
         if done:
             break
 
-    score = sum(rewards)
+    score = min(max(sum(rewards), 0.0), 1.0)
     log_end(score >= 0.5, len(steps), score, rewards)
     return rewards
 
