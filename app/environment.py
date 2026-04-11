@@ -11,6 +11,11 @@ from typing import Dict
 class WorkflowEnvironment:
     def __init__(self):
         self.sessions: Dict[str, WorkflowState] = {}
+        self.prerequisites = {
+            "draft_po": ["check_inventory"],
+            "message_supplier": ["check_inventory"],
+            "flag_approval": ["draft_po"],
+        }
 
     def reset(self, task_id: TaskID) -> WorkflowState:
         state = WorkflowState(
@@ -30,6 +35,23 @@ class WorkflowEnvironment:
         result = {}
         info = ""
 
+        # Check prerequisites
+        if action.action_type in self.prerequisites:
+            required_actions = self.prerequisites[action.action_type]
+            if not all(
+                req in [a["action"]["action_type"] for a in state.history]
+                for req in required_actions
+            ):
+                return WorkflowObservation(
+                    task_id=task_id,
+                    step=state.step,
+                    result={},
+                    reward=0.0,
+                    done=False,
+                    info=f"Prerequisite not met: {', '.join(required_actions)}",
+                )
+
+        # Execute action based on task type
         if task_id == TaskID.easy:
             reward, done, result, info = self._run_easy(action, state)
         elif task_id == TaskID.medium:
@@ -77,6 +99,7 @@ class WorkflowEnvironment:
 
     def _run_medium(self, action, state):
         step = state.step
+        # Step 0: parse_requisition
         if step == 0:
             if action.action_type != "parse_requisition":
                 return 0.0, False, {}, "Expected parse_requisition first"
@@ -84,70 +107,149 @@ class WorkflowEnvironment:
             req = get_requisition(req_id)
             if not req:
                 return 0.0, True, {}, "Invalid requisition"
-            item_id = match_item_from_description(req["description"])
-            state.history.append({"item_id": item_id, "req": req})
+            item_id = match_item_from_description(req.get("description", ""))
+            # Store item_id in history for later steps
+            state.history.append(
+                {"item_id": item_id, "req": req, "action": action.dict()}
+            )
             return (
                 0.33,
                 False,
                 {"requisition": req, "suggested_item": item_id},
                 "Step 1 complete",
             )
+        # Step 1: check_inventory (Bug‑fixed block)
         elif step == 1:
             if action.action_type != "check_inventory":
                 return 0.0, False, {}, "Expected check_inventory"
             item_id = action.payload.get("item_id", "")
+            if not item_id:
+                return 0.0, False, {}, "Item not found"
             inv = get_inventory(item_id)
             if not inv:
                 return 0.0, False, {}, "Item not found"
             return 0.33, False, {"inventory": inv}, "Step 2 complete"
+        # Step 2: draft_po (includes unknown‑item and financial guardrails)
         elif step == 2:
             if action.action_type != "draft_po":
                 return 0.0, True, {}, "Expected draft_po"
+            # Ensure we have the item ID from the payload
+            item_id = action.payload.get("item_id", "")
+            if not any(
+                a["action"]["action_type"] == "check_inventory" for a in state.history
+            ):
+                return 0.0, False, {}, "Expected check_inventory first"
             required = ["item_id", "quantity", "total_cost", "department"]
             missing = [f for f in required if f not in action.payload]
             if missing:
                 return 0.1, True, {"missing_fields": missing}, "Incomplete PO"
+            # Handle unknown items gracefully
+            item_id = action.payload.get("item_id", "")
+            if not item_id:
+                return 0.0, True, {}, "Item not found in description - flag for review"
+            # Financial Guardrails (Sprint A)
+            quantity = action.payload.get("quantity", 0)
+            total_cost = action.payload.get("total_cost", 0.0)
+            if item_id and quantity > 0:
+                inventory_item = get_inventory(item_id)
+                if inventory_item:
+                    unit_price = inventory_item.get("unit_price", 0.0)
+                    expected_cost = quantity * unit_price
+                    if abs(total_cost - expected_cost) > 0.01:
+                        return (
+                            0.0,
+                            True,
+                            {},
+                            f"Financial validation failed: expected {expected_cost}, got {total_cost}",
+                        )
             return 0.33, True, {"po_draft": action.payload}, "PO drafted successfully"
-        return 0.0, True, {}, "Unexpected step"
+        else:
+            return 0.0, True, {}, "Unexpected step"
 
     def _run_hard(self, action, state):
-        step = state.step
-        if step == 0:
-            if action.action_type != "parse_requisition":
-                return 0.0, False, {}, "Expected parse_requisition"
+        # Check if parse_requisition has been completed
+        if action.action_type == "check_inventory":
+            if not any(
+                a["action"]["action_type"] == "parse_requisition" for a in state.history
+            ):
+                return 0.0, False, {}, "Expected parse_requisition first"
+            inv = get_inventory(action.payload.get("item_id", ""))
+            if not inv:
+                return 0.0, False, {}, "Item not found"
+            return 0.2, False, {"inventory": inv}, "Inventory checked"
+
+        # Check if check_inventory has been completed before message_supplier
+        elif action.action_type == "message_supplier":
+            # Reward Shaping (Sprint B): Negative reward if message_supplier before check_inventory
+            if not any(
+                a["action"]["action_type"] == "check_inventory" for a in state.history
+            ):
+                return (
+                    -0.5,
+                    False,
+                    {},
+                    "Penalty: message_supplier before check_inventory",
+                )
+            supplier = get_supplier(action.payload.get("item_id", ""))
+            if not supplier:
+                return 0.0, False, {}, "Supplier not found"
+            return 0.2, False, {"supplier_contacted": supplier}, "Supplier contacted"
+
+        # Check if message_supplier has been completed before draft_po
+        elif action.action_type == "draft_po":
+            if not any(
+                a["action"]["action_type"] == "check_inventory" for a in state.history
+            ):
+                return 0.0, False, {}, "Expected check_inventory first"
+            required = ["item_id", "quantity", "total_cost", "department"]
+            missing = [f for f in required if f not in action.payload]
+            if missing:
+                return 0.1, False, {"missing_fields": missing}, "Incomplete PO"
+
+            # Handle unknown items gracefully
+            item_id = action.payload.get("item_id", "")
+            if not item_id:
+                return 0.0, True, {}, "Item not found in description - flag for review"
+
+            # Financial Guardrails (Sprint A): Validate total_cost == quantity * unit_price
+            quantity = action.payload.get("quantity", 0)
+            total_cost = action.payload.get("total_cost", 0.0)
+
+            if item_id and quantity > 0:
+                inventory_item = get_inventory(item_id)
+                if inventory_item:
+                    unit_price = inventory_item.get("unit_price", 0.0)
+                    expected_cost = quantity * unit_price
+                    if (
+                        abs(total_cost - expected_cost) > 0.01
+                    ):  # Allow small floating point differences
+                        return (
+                            0.0,
+                            True,
+                            {},
+                            f"Financial validation failed: expected {expected_cost}, got {total_cost}",
+                        )
+
+            return 0.2, False, {"po_draft": action.payload}, "PO drafted"
+
+        # Check if draft_po has been completed before flag_approval
+        elif action.action_type == "flag_approval":
+            if not any(a["action"]["action_type"] == "draft_po" for a in state.history):
+                return 0.0, False, {}, "Expected draft_po first"
+            approver = action.payload.get("approver", "")
+            if approver:
+                return 0.19, True, {"flagged_to": approver}, "Full pipeline complete"
+            return 0.1, True, {}, "Missing approver"
+
+        # Handle parse_requisition as first step
+        elif action.action_type == "parse_requisition":
             req = get_requisition(action.payload.get("req_id", "REQ-001"))
             item_id = match_item_from_description(req.get("description", ""))
             return (
                 0.2,
                 False,
                 {"requisition": req, "suggested_item": item_id},
-                "Step 1 done",
+                "Requisition parsed",
             )
-        elif step == 1:
-            if action.action_type != "check_inventory":
-                return 0.0, False, {}, "Expected check_inventory"
-            inv = get_inventory(action.payload.get("item_id", ""))
-            return 0.2, False, {"inventory": inv}, "Step 2 done"
-        elif step == 2:
-            if action.action_type != "message_supplier":
-                return 0.0, False, {}, "Expected message_supplier"
-            supplier = get_supplier(action.payload.get("item_id", ""))
-            if not supplier:
-                return 0.0, False, {}, "Supplier not found"
-            return 0.2, False, {"supplier_contacted": supplier}, "Step 3 done"
-        elif step == 3:
-            if action.action_type != "draft_po":
-                return 0.0, False, {}, "Expected draft_po"
-            required = ["item_id", "quantity", "total_cost", "department"]
-            missing = [f for f in required if f not in action.payload]
-            if missing:
-                return 0.1, False, {"missing_fields": missing}, "Incomplete PO"
-            return 0.2, False, {"po_draft": action.payload}, "Step 4 done"
-        elif step == 4:
-            if action.action_type != "flag_approval":
-                return 0.0, True, {}, "Expected flag_approval"
-            approver = action.payload.get("approver", "")
-            if approver:
-                return 0.19, True, {"flagged_to": approver}, "Full pipeline complete"
-            return 0.1, True, {}, "Missing approver"
+
         return 0.0, True, {}, "Unexpected step"

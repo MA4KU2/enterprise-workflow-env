@@ -6,8 +6,8 @@ from statistics import mean
 
 BASE_URL = os.getenv("ENV_URL", "https://ma4ku2-enterprise-workflow-env.hf.space")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://openrouter.ai/api/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "mistralai/mistral-7b-instruct:free")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "")
+MODEL_NAME = os.getenv("MODEL_NAME", "openai/gpt-oss-20b:free")
+API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY", "")
 
 client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 

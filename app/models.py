@@ -11,6 +11,7 @@ class WorkflowAction(BaseModel):
     task_id: TaskID
     action_type: str  # "parse_requisition" | "check_inventory" | "draft_po" | "message_supplier" | "flag_approval"
     payload: Dict[str, Any] = {}
+    rationale: str = ""
 
 class WorkflowObservation(BaseModel):
     task_id: TaskID
