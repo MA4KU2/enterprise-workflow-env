@@ -20,14 +20,14 @@ This environment is designed to benchmark and train agents on **structured decis
 
 ### ✨ Agent Features
 
-| Feature | Description | Inspired By |
-|---------|-------------|-------------|
-| 🧠 **Skill System** | Composable, reusable workflow action definitions with ordered task chains | NousResearch/hermes-agent |
-| 💾 **Episode Memory** | Remembers past workflow decisions and rewards across resets | NousResearch/hermes-agent |
-| ✅ **Payload Validation** | Validates required fields before every action to catch missing data early | Original |
-| 🔄 **Jittered Backoff Retry** | Decorrelated exponential retry on LLM failures — no thundering herd | NousResearch/hermes-agent |
-| 🗜️ **Trajectory Compressor** | Compresses long episode histories to fit token budgets | NousResearch/hermes-agent |
-| 📊 **Sigmoid Grading** | Smooth scoring strictly within (0, 1) using sigmoid normalization | Original |
+| Feature | Description |
+|---------|-------------|
+| 🧠 **Skill System** | Composable, reusable workflow action definitions with ordered task chains |
+| 💾 **Episode Memory** | Remembers past workflow decisions and rewards across resets |
+| ✅ **Payload Validation** | Validates required fields before every action to catch missing data early |
+| 🔄 **Jittered Backoff Retry** | Decorrelated exponential retry on LLM failures — no thundering herd |
+| 🗜️ **Trajectory Compressor** | Compresses long episode histories to fit token budgets |
+| 📊 **Sigmoid Grading** | Smooth scoring strictly within (0, 1) using sigmoid normalization |
 
 ---
 
