@@ -10,6 +10,9 @@ pinned: false
 
 > A real-world **OpenEnv-compatible** environment for training AI agents on enterprise procurement workflows — built for the **Meta × PyTorch × Hugging Face OpenEnv Hackathon** hosted by Scaler School of Technology (SST).
 
+> https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env
+
+> https://ma4ku2-enterprise-workflow-env.hf.space 
 ---
 
 ## 🚀 Overview
@@ -17,6 +20,12 @@ pinned: false
 **Enterprise Workflow OpenEnv** simulates a realistic enterprise procurement pipeline where AI agents must complete multi-step workflows — from parsing purchase requisitions to drafting purchase orders and flagging approvals.
 
 This environment is designed to benchmark and train agents on **structured decision-making** in real-world business contexts.
+
+## 💻 Built On Constrained Hardware
+
+This entire environment was designed, built, tested, and deployed on a **Raspberry Pi 5 (8GB RAM)** running **Kali Linux OS (aarch64)** with **VERSION - 2026.1** — no cloud compute, no GPU, no high-end development machine.
+
+All Docker builds, local testing, and HuggingFace deployments were executed directly on ARM64 hardware with limited RAM — proving the environment is lightweight, portable, and production-ready.
 
 ### ✨ Agent Features
 
@@ -28,6 +37,17 @@ This environment is designed to benchmark and train agents on **structured decis
 | 🔄 **Jittered Backoff Retry** | Decorrelated exponential retry on LLM failures — no thundering herd |
 | 🗜️ **Trajectory Compressor** | Compresses long episode histories to fit token budgets |
 | 📊 **Sigmoid Grading** | Smooth scoring strictly within (0, 1) using sigmoid normalization |
+
+---
+
+## 🔑 Zero-Cost Inference Stack
+
+Instead of paid OpenAI API credits, this project uses **OpenRouter** as the API gateway with free-tier models (`openai/gpt-oss-20b:free`) — keeping the entire development and testing pipeline completely free.
+
+The inference script is fully compatible with any OpenAI-compatible endpoint via environment variables:
+- `API_BASE_URL` — swap to any provider
+- `MODEL_NAME` — swap to any model
+- `HF_TOKEN` && `OPENAI_API_KEY`  — your API key
 
 ---
 
@@ -80,24 +100,24 @@ This environment is designed to benchmark and train agents on **structured decis
 ### Reset Environment
 ```bash
 # No body needed — defaults to easy task
-curl -X POST https://MA4KU2-enterprise-workflow-env.hf.space/reset
+curl -X POST https://ma4ku2-enterprise-workflow-env.hf.space/reset
 
 # Or specify a task
-curl -X POST https://MA4KU2-enterprise-workflow-env.hf.space/reset \
+curl -X POST https://ma4ku2-enterprise-workflow-env.hf.space/reset \
   -H "Content-Type: application/json" \
   -d '{"task_id": "hard"}'
 ```
 
 ### Execute a Step
 ```bash
-curl -X POST https://MA4KU2-enterprise-workflow-env.hf.space/step \
+curl -X POST https://ma4ku2-enterprise-workflow-env.hf.space/step \
   -H "Content-Type: application/json" \
   -d '{"task_id": "easy", "action_type": "parse_requisition", "payload": {"req_id": "REQ-001", "item_id": "ITM-001"}}'
 ```
 
 ### Check Grader Scores
 ```bash
-curl https://MA4KU2-enterprise-workflow-env.hf.space/grader
+curl https://ma4ku2-enterprise-workflow-env.hf.space/grader
 # {"scores": {"easy": 0.9205, "medium": 0.9205, "hard": 0.9205}}
 ```
 
