@@ -23,6 +23,9 @@ A real-world **OpenEnv-compatible** environment for training AI agents on enterp
 
 Designed to benchmark and train agents on **structured decision-making** in real-world business contexts.
 
+[![HF Space](https://img.shields.io/badge/🤗_Hugging_Face-Space-blue)](https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env)
+[![Demo](https://img.shields.io/badge/Live_Demo-00A3E0?style=flat&logo=huggingface)](https://ma4ku2-enterprise-workflow-env.hf.space)
+
 ---
 
 ## 🧩 Tasks
@@ -223,3 +226,5 @@ Submitted to the **Meta PyTorch OpenEnv Hackathon**, hosted by Scaler School of 
 ## 📄 License
 
 MIT License
+
+Made with ❤️ for the AI agent research community.
