@@ -11,9 +11,9 @@ pinned: false
 
 A real-world **OpenEnv-compatible** environment for training AI agents on enterprise procurement workflows — built for the **Meta × PyTorch × Hugging Face OpenEnv Hackathon** hosted by Scaler School of Technology (SST).
 
-> https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env
+> [![HF Space](https://img.shields.io/badge/🤗_Hugging_Face-Space-blue)](https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env) https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env
 
-> https://ma4ku2-enterprise-workflow-env.hf.space 
+> [![Demo](https://img.shields.io/badge/Live_Demo-00A3E0?style=flat&logo=huggingface)](https://ma4ku2-enterprise-workflow-env.hf.space)  https://ma4ku2-enterprise-workflow-env.hf.space 
 
 ---
 
@@ -23,8 +23,6 @@ A real-world **OpenEnv-compatible** environment for training AI agents on enterp
 
 Designed to benchmark and train agents on **structured decision-making** in real-world business contexts.
 
-[![HF Space](https://img.shields.io/badge/🤗_Hugging_Face-Space-blue)](https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env)
-[![Demo](https://img.shields.io/badge/Live_Demo-00A3E0?style=flat&logo=huggingface)](https://ma4ku2-enterprise-workflow-env.hf.space)
 
 ---
 
