@@ -108,6 +108,7 @@ flag_approval      → payload: {approver}
 │   ├── medium.py           # Medium task definition
 │   └── hard.py             # Hard task definition
 └── tests/
+    ├──debug_inference.py
     ├── final_validation.py # Full environment logic validation (5 tests)
     └── test_with_mock.py   # Mocked LLM tests
 ```
