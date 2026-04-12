@@ -92,6 +92,8 @@ flag_approval      → payload: {approver}
 ├── openenv.yaml            # OpenEnv configuration
 ├── Dockerfile              # Container definition (python:3.11-slim, port 7860)
 ├── requirements.txt        # Dependencies
+├── server/
+│   └── main.py             # Launch the server of uvicorn (app, host="0.0.0.0", port=8000)
 ├── app/
 │   ├── main.py             # FastAPI routes and endpoints
 │   ├── environment.py      # WorkflowEnvironment — state machine + reward logic
@@ -108,7 +110,7 @@ flag_approval      → payload: {approver}
 │   ├── medium.py           # Medium task definition
 │   └── hard.py             # Hard task definition
 └── tests/
-    ├──debug_inference.py
+    ├── debug_inference.py
     ├── final_validation.py # Full environment logic validation (5 tests)
     └── test_with_mock.py   # Mocked LLM tests
 ```
@@ -140,6 +142,30 @@ export OPENAI_API_KEY="<your_openrouter_key>"
 export API_BASE_URL="https://openrouter.ai/api/v1"
 export MODEL_NAME="openai/gpt-oss-120b:free"
 python3 inference.py
+```
+
+### 🖥️ Self-Host Locally
+```bash
+# Clone the repo
+git clone https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env
+cd enterprise-workflow-env
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set your API key
+export OPENROUTER_API_KEY="your-key-here"
+export API_BASE_URL="https://openrouter.ai/api/v1"
+export MODEL_NAME="openai/gpt-oss-120b:free"
+
+# Launch the server
+PYTHONPATH=$(pwd) python server/main.py
+# → Server running at http://0.0.0.0:8000
+```
+
+Or use the convenience launcher:
+```bash
+./run.sh
 ```
 
 ---
