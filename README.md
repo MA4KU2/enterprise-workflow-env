@@ -81,6 +81,32 @@ flag_approval      → payload: {approver}
 
 ---
 
+## 🗂️ Project Structure
+├── inference.py            # Main inference script (observation-driven LLM agent)
+├── openenv.yaml            # OpenEnv configuration
+├── Dockerfile              # Container definition (python:3.11-slim, port 7860)
+├── requirements.txt        # Dependencies
+├── app/
+│   ├── main.py             # FastAPI routes and endpoints
+│   ├── environment.py      # WorkflowEnvironment — state machine + reward logic
+│   ├── models.py           # Pydantic typed models
+│   ├── grader.py           # Sigmoid grading logic
+│   └── mock_backend.py     # Mock enterprise backend (15 items, 13 requisitions)
+├── agent/
+│   ├── skills.py           # Composable skill system with episode memory
+│   ├── retry_utils.py      # Jittered backoff retry
+│   ├── trajectory.py       # Trajectory compressor
+│   └── baseline.py         # Multi-episode baseline runner
+├── tasks/
+│   ├── easy.py             # Easy task definition
+│   ├── medium.py           # Medium task definition
+│   └── hard.py             # Hard task definition
+└── tests/
+├── final_validation.py # Full environment logic validation (5 tests)
+└── test_with_mock.py   # Mocked LLM tests
+
+---
+
 ## ⚡ Quick Start
 
 ### Reset Environment
@@ -135,7 +161,7 @@ python3 inference.py
 
 Built entirely on a **Raspberry Pi 5 (8GB RAM)** running **Kali Linux (aarch64)** — no cloud compute, no GPU.
 
-All Docker builds, local testing, and HuggingFace deployments executed directly on ARM64 hardware.
+All Docker builds, local testing, and HuggingFace deployments executed directly on ARM64 hardware, proving the environment is lightweight and portable.
 
 ---
 
@@ -147,6 +173,27 @@ Compatible with any OpenAI-compatible endpoint via environment variables:
 - `OPENAI_API_KEY` — your API key
 - `API_BASE_URL` — swap to any provider
 - `MODEL_NAME` — swap to any model
+
+---
+
+## 🗺️ Production Roadmap
+
+### Enterprise Integrations
+- Temporal.io for durable long-running workflow execution
+- Merge.dev for ERP integration (SAP, Oracle, Workday)
+- Pinecone for corporate procurement memory via RAG
+- LangSmith for LLM observability and audit trails
+- NeMo Guardrails for prompt injection protection
+
+### Automation & Orchestration
+- n8n for no-code workflow automation layer
+- LangFlow for visual agent pipeline builder
+- MCP servers for dynamic tool discovery and capability extension
+
+### Agent Infrastructure
+- OpenClaw multi-agent orchestration for parallel procurement workflows
+- Redis for short-term agent memory and API call caching
+- Slack/Teams integration for Human-in-the-Loop approvals
 
 ---
 
