@@ -11,7 +11,7 @@ import sys
 os.environ["HF_TOKEN"] = "dummy-validation-token"
 os.environ["API_KEY"] = "dummy-validation-key"
 
-sys.path.insert(0, ".")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def test_environment_logic():

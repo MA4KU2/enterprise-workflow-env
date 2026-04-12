@@ -19,7 +19,12 @@ try:
     # Try to create client
     API_BASE_URL = os.getenv("API_BASE_URL", "https://openrouter.ai/api/v1")
     MODEL_NAME = os.getenv("MODEL_NAME", "openai/gpt-oss-20b:free")
-    API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "")
+    API_KEY = (
+    os.getenv("HF_TOKEN")
+    or os.getenv("OPENROUTER_API_KEY")
+    or os.getenv("OPENAI_API_KEY")
+    or os.getenv("API_KEY")
+    or "")
     
     print(f"API_BASE_URL: {API_BASE_URL}")
     print(f"MODEL_NAME: {MODEL_NAME}")

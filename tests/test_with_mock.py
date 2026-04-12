@@ -12,16 +12,7 @@ import json
 os.environ['HF_TOKEN'] = 'dummy-token'
 os.environ['API_KEY'] = 'dummy-key'
 
-def mock_llm_response(*args, **kwargs):
-    """Mock LLM response that returns appropriate actions based on observation"""
-    mock_response = MagicMock()
-    mock_response.choices = [MagicMock()]
-    mock_response.choices[0].message.content = '{"action_type": "parse_requisition", "payload": {"req_id": "REQ-001"}, "rationale": "Starting workflow"}'
-    return mock_response
-
-def test_with_mock():
-    """Test the system with mocked LLM"""
-    sys.path.insert(0, '.')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     
     # Patch the OpenAI client
     with patch('inference.OpenAI') as mock_openai_class:
