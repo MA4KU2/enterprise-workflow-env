@@ -11,6 +11,10 @@ pinned: false
 
 A real-world **OpenEnv-compatible** environment for training AI agents on enterprise procurement workflows — built for the **Meta × PyTorch × Hugging Face OpenEnv Hackathon** hosted by Scaler School of Technology (SST).
 
+> https://huggingface.co/spaces/MA4KU2/enterprise-workflow-env
+
+> https://ma4ku2-enterprise-workflow-env.hf.space 
+
 ---
 
 ## 🚀 Overview
@@ -82,6 +86,7 @@ flag_approval      → payload: {approver}
 ---
 
 ## 🗂️ Project Structure
+```
 ├── inference.py            # Main inference script (observation-driven LLM agent)
 ├── openenv.yaml            # OpenEnv configuration
 ├── Dockerfile              # Container definition (python:3.11-slim, port 7860)
@@ -102,10 +107,9 @@ flag_approval      → payload: {approver}
 │   ├── medium.py           # Medium task definition
 │   └── hard.py             # Hard task definition
 └── tests/
-├── final_validation.py # Full environment logic validation (5 tests)
-└── test_with_mock.py   # Mocked LLM tests
-
----
+    ├── final_validation.py # Full environment logic validation (5 tests)
+    └── test_with_mock.py   # Mocked LLM tests
+```
 
 ## ⚡ Quick Start
 
@@ -130,15 +134,16 @@ curl https://ma4ku2-enterprise-workflow-env.hf.space/grader
 
 ### Run Inference Agent
 ```bash
-export OPENAI_API_KEY=your_openrouter_key
-export API_BASE_URL=https://openrouter.ai/api/v1
-export MODEL_NAME=openai/gpt-oss-120b
+export OPENAI_API_KEY="<your_openrouter_key>"
+export API_BASE_URL="https://openrouter.ai/api/v1"
+export MODEL_NAME="openai/gpt-oss-120b:free"
 python3 inference.py
 ```
 
 ---
 
 ## 📋 Baseline Scores
+```
 [START] task=easy env=enterprise-workflow-env model=openai/gpt-oss-20b:free
 [STEP] step=1 action=parse_requisition reward=0.99 done=true error=null
 [END] success=true steps=1 score=0.990 rewards=0.99
@@ -154,12 +159,13 @@ python3 inference.py
 [STEP] step=4 action=draft_po reward=0.20 done=false error=null
 [STEP] step=5 action=flag_approval reward=0.19 done=true error=null
 [END] success=true steps=5 score=0.990 rewards=0.20,0.20,0.20,0.20,0.19
+```
 
 ---
 
 ## 💻 Built On Constrained Hardware
 
-Built entirely on a **Raspberry Pi 5 (8GB RAM)** running **Kali Linux (aarch64)** — no cloud compute, no GPU.
+Built entirely on a **Raspberry Pi 5 (8GB RAM)** running **Kali Linux (aarch64/ARM64) OS** — no cloud compute, no GPU.
 
 All Docker builds, local testing, and HuggingFace deployments executed directly on ARM64 hardware, proving the environment is lightweight and portable.
 
@@ -181,9 +187,10 @@ Compatible with any OpenAI-compatible endpoint via environment variables:
 ### Enterprise Integrations
 - Temporal.io for durable long-running workflow execution
 - Merge.dev for ERP integration (SAP, Oracle, Workday)
-- Pinecone for corporate procurement memory via RAG
+- Pinecone/Supabase for corporate procurement memory via RAG
 - LangSmith for LLM observability and audit trails
 - NeMo Guardrails for prompt injection protection
+- CLI Interface to directly interact with the Agent Directly
 
 ### Automation & Orchestration
 - n8n for no-code workflow automation layer
